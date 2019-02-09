@@ -5,6 +5,7 @@ namespace MaxBeckers\AmazonAlexa\Request;
 use MaxBeckers\AmazonAlexa\Exception\MissingRequestDataException;
 use MaxBeckers\AmazonAlexa\Exception\MissingRequiredHeaderException;
 use MaxBeckers\AmazonAlexa\Request\Request\AbstractRequest;
+use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerLevelController\TurnOffRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackFailedRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackFinishedRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackNearlyFinishedRequest;
@@ -51,6 +52,10 @@ class Request
         ElementSelectedRequest::TYPE        => ElementSelectedRequest::class,
         // can fulfill intent
         CanFulfillIntentRequest::TYPE       => CanFulfillIntentRequest::class,
+    ];
+
+    const DIRECTIVE_TYPES = [
+        TurnOffRequest::TYPE        => TurnOffRequest::class
     ];
 
     /**
@@ -103,15 +108,21 @@ class Request
         $request = new self();
 
         $request->signatureCertChainUrl = $signatureCertChainUrl;
-        $request->signature             = $signature;
-        $request->amazonRequestBody     = $amazonRequestBody;
-        $amazonRequest                  = json_decode($amazonRequestBody, true);
+        $request->signature = $signature;
+        $request->amazonRequestBody = $amazonRequestBody;
+        $amazonRequest = json_decode($amazonRequestBody, true);
 
         $request->version = isset($amazonRequest['version']) ? $amazonRequest['version'] : null;
         $request->session = isset($amazonRequest['session']) ? Session::fromAmazonRequest($amazonRequest['session']) : null;
         $request->context = isset($amazonRequest['context']) ? Context::fromAmazonRequest($amazonRequest['context']) : null;
 
-        if (isset($amazonRequest['request']['type']) && isset(self::REQUEST_TYPES[$amazonRequest['request']['type']])) {
+        $namespace = $amazonRequest['directive']['header']['namespace'] ?? null;
+        $name = $amazonRequest['directive']['header']['name'] ?? null;
+        $directive = ($namespace && $name) ? sprintf('%s.%s', $namespace, $name) : null;
+
+        if ($directive && isset(self::DIRECTIVE_TYPES[$directive])) {
+            $request->request = (self::DIRECTIVE_TYPES[$directive])::fromAmazonRequest($amazonRequest['directive']);
+        } elseif (isset($amazonRequest['request']['type']) && isset(self::REQUEST_TYPES[$amazonRequest['request']['type']])) {
             $request->request = (self::REQUEST_TYPES[$amazonRequest['request']['type']])::fromAmazonRequest($amazonRequest['request']);
         } else {
             throw new MissingRequestDataException();

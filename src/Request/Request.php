@@ -5,7 +5,10 @@ namespace MaxBeckers\AmazonAlexa\Request;
 use MaxBeckers\AmazonAlexa\Exception\MissingRequestDataException;
 use MaxBeckers\AmazonAlexa\Exception\MissingRequiredHeaderException;
 use MaxBeckers\AmazonAlexa\Request\Request\AbstractRequest;
-use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerLevelController\TurnOffRequest;
+use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerController\TurnOffRequest;
+use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerController\TurnOnRequest;
+use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerLevelController\AdjustPowerLevelRequest;
+use MaxBeckers\AmazonAlexa\Request\Request\Alexa\PowerLevelController\SetPowerLevelRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackFailedRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackFinishedRequest;
 use MaxBeckers\AmazonAlexa\Request\Request\AudioPlayer\PlaybackNearlyFinishedRequest;
@@ -55,7 +58,10 @@ class Request
     ];
 
     const DIRECTIVE_TYPES = [
-        TurnOffRequest::TYPE        => TurnOffRequest::class
+        TurnOffRequest::TYPE            => TurnOffRequest::class,
+        TurnOnRequest::TYPE             => TurnOnRequest::class,
+        SetPowerLevelRequest::TYPE      => SetPowerLevelRequest::class,
+        AdjustPowerLevelRequest::TYPE   => AdjustPowerLevelRequest::class
     ];
 
     /**
